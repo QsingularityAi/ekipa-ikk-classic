@@ -1,24 +1,18 @@
-# App Engagement Intelligence - How Everything Works Together
+# App Engagement Intelligence - System Architecture
 
-## What This System Does
+## Overview
 
-Imagine having a smart friend who watches how people use your app, figures out when they might need help, and then sends them just the right message at the perfect moment. That's basically what our App Engagement Intelligence system does! 
+The App Engagement Intelligence system is designed as a microservices-based platform that analyzes user behavior, generates personalized interventions, and ensures GDPR/GDNG compliance. The system processes user interaction events in real-time and delivers targeted interventions across multiple channels to improve digital adoption.
 
-It's built like a well-organized team where each member has a specific job - some collect information, others analyze it, and some take action based on what they learned. The whole system is designed to help users have a better experience with your app while keeping their privacy safe and sound.
+## Architecture Principles
 
-## Our Guiding Principles
+1. **Privacy by Design**: All data processing adheres to GDPR and GDNG requirements
+2. **Scalability**: Horizontally scalable microservices architecture
+3. **Resilience**: Circuit breakers, retry mechanisms, and graceful degradation
+4. **Real-time Processing**: Event-driven architecture for immediate response
+5. **Compliance First**: Built-in audit trails and consent management
 
-Think of these as our "house rules" - everything we build follows these principles:
-
-1. **Privacy First, Always**: We treat user data like it's our own family's information - with the utmost care and respect for GDPR and GDNG rules
-2. **Grows With You**: As your user base expands, our system scales up smoothly without missing a beat
-3. **Built to Last**: When things go wrong (and they sometimes do), our system gracefully handles problems and keeps running
-4. **Real-Time Reactions**: We process events as they happen, so users get help when they need it most
-5. **Compliance is Key**: Every action is logged and auditable - we keep detailed records for regulatory compliance
-
-## The Big Picture - How It All Fits Together
-
-Here's how our system is organized - think of it like a well-designed city with different districts:
+## High-Level Architecture
 
 ```mermaid
 graph TB
@@ -100,56 +94,54 @@ graph TB
     W --> Y
 ```
 
-## Our Team of Digital Workers
+## Component Architecture
 
-Think of our system as a well-organized team where each member has a specific role. Let me introduce you to the key players:
+### 1. Event Collection Service
 
-### 1. The Event Collector - Our Information Gatherer
+**Purpose**: Collects and validates user interaction events from mobile app and web interfaces.
 
-**What they do**: This is like having a really observant assistant who notices everything users do in your app and carefully records it.
+**Key Components**:
+- Event Collector: Receives and validates incoming events
+- Consent Validator: Ensures user consent before processing
+- Data Anonymizer: Pseudonymizes sensitive data
+- Event Buffer: Temporary storage for batch processing
 
-**Their responsibilities**:
-- Listen for user actions (taps, swipes, form submissions, etc.)
-- Check if the user has given permission to track their activity
-- Remove or hide any personally identifiable information to protect privacy
-- Store events temporarily for efficient processing
+**Technologies**:
+- Node.js/TypeScript
+- Express.js for REST API
+- Redis for buffering
+- JSON Schema for validation
 
-**Tools they use**:
-- Node.js and TypeScript (for fast, reliable processing)
-- Express.js (to handle incoming requests)
-- Redis (for temporary storage)
-- JSON Schema (to make sure data is properly formatted)
+**Scaling Strategy**:
+- Horizontal scaling with load balancer
+- Event buffering for high throughput
+- Circuit breakers for external dependencies
 
-**How they handle busy periods**:
-- They can call in backup workers when traffic gets heavy
-- They group events together for efficient processing
-- They have backup plans when external services are down
+### 2. Analytics Service
 
-### 2. The Analytics Expert - Our Data Detective
+**Purpose**: Processes events to generate insights, user segments, and behavioral patterns.
 
-**What they do**: This team member is like Sherlock Holmes for your app data - they spot patterns, trends, and insights that help you understand your users better.
+**Key Components**:
+- Stream Processor: Real-time event processing
+- Pattern Analyzer: Identifies user behavior patterns
+- Segmentation Engine: Dynamic user segmentation
+- Metrics Collector: Aggregates performance metrics
 
-**Their superpowers**:
-- Process events as they happen (real-time analysis)
-- Spot interesting patterns in user behavior
-- Group users into meaningful segments (like "new users who love mobile claims")
-- Track important metrics to measure success
+**Technologies**:
+- Apache Kafka/Pulsar for streaming
+- PostgreSQL for structured data
+- InfluxDB for time-series data
+- Redis for caching
 
-**Tools in their toolkit**:
-- Apache Kafka for handling streams of data
-- PostgreSQL for organized data storage
-- InfluxDB for time-based metrics
-- Redis for quick data access
+**Data Flow**:
+1. Events received from Event Collection Service
+2. Real-time processing and pattern detection
+3. User profile updates and segmentation
+4. Metrics aggregation and storage
 
-**How they work**:
-1. Receive fresh events from the Event Collector
-2. Look for patterns and interesting behaviors
-3. Update user profiles and create segments
-4. Calculate and store important metrics
+### 3. Engagement Service
 
-### 3. The Engagement Specialist - Our Helpful Messenger
-
-**What they do**: This is your app's personal concierge - they figure out exactly when and how to help each user, then deliver perfectly timed, helpful messages.
+**Purpose**: Generates and delivers personalized interventions based on user behavior and segments.
 
 **Key Components**:
 - Recommendation Engine: ML-based intervention recommendations

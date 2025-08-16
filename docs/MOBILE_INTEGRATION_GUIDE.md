@@ -1,66 +1,53 @@
-# Getting Your Mobile App Connected - A Friendly Integration Guide
+# Mobile Application Integration Guide for Grafana Analytics
 
-## What We're Going to Accomplish
+## Overview
 
-Hey there! 👋 Ready to supercharge your mobile app with some smart analytics and user engagement features? This guide will walk you through connecting your app to our App Engagement Intelligence API so you can start understanding your users better and helping them have an amazing experience.
+This guide provides a comprehensive approach to integrate the App Engagement Intelligence API with your mobile application to enable real-time tracking and visualization in Grafana dashboards.
 
-Think of this as adding a smart assistant to your app - one that notices what users do, learns from their behavior, and helps them succeed. The best part? We'll show you exactly how to set it up, step by step.
-
-## How This All Works Together
-
-Here's the simple flow of what happens:
+## Integration Architecture
 
 ```
-Your Mobile App → Sends Events → Our API → Creates Insights → You See Beautiful Dashboards
+Mobile App → API Events → Prometheus Metrics → Grafana Dashboard
      ↓
-  User Interactions → Event Tracking → Smart Analysis → Helpful Visualizations
+User Interactions → Event Tracking → Analytics Processing → Visualization
 ```
 
-It's that straightforward! Users do things in your app, we capture those interactions (with their permission, of course), analyze the patterns, and give you actionable insights through gorgeous Grafana dashboards.
+## 1. Mobile SDK Integration
 
-## Step 1: Getting Our SDK Into Your App
+### 1.1 SDK Installation
 
-No matter what platform you're building on, we've got you covered! Pick your favorite technology and let's get started:
-
-### React Native (The Popular Choice)
-
+**React Native:**
 ```bash
 npm install @ikk-classic/engagement-intelligence-sdk
 ```
 
-### Flutter (Cross-Platform Goodness)
-
+**Flutter:**
 ```yaml
 dependencies:
   engagement_intelligence_sdk: ^1.0.0
 ```
 
-### Native iOS with Swift (Apple's Finest)
-
+**Native iOS (Swift):**
 ```swift
-// Add this to your Package.swift file
+// Add to Package.swift
 .package(url: "https://github.com/ikk-classic/engagement-intelligence-ios-sdk", from: "1.0.0")
 ```
 
-### Native Android with Kotlin (Google's Way)
-
+**Native Android (Kotlin):**
 ```gradle
 implementation 'de.ikk-classic:engagement-intelligence-android:1.0.0'
 ```
 
-## Step 2: Setting Up Your Connection
+### 1.2 SDK Configuration
 
-Now let's configure your app to talk to our API. Here's how to do it for each platform:
-
-### React Native Setup (Most Common)
-
+**React Native Example:**
 ```typescript
 import { EngagementIntelligenceClient } from '@ikk-classic/engagement-intelligence-sdk';
 
 const client = new EngagementIntelligenceClient({
   baseUrl: 'https://api.ikk-classic.de/engagement/v1',
-  apiKey: process.env.ENGAGEMENT_API_KEY, // Keep this secret!
-  batchSize: 10, // How many events to send at once
+  apiKey: process.env.ENGAGEMENT_API_KEY,
+  batchSize: 10,
   flushInterval: 30000, // 30 seconds
   enableAutoTracking: true,
   debugMode: __DEV__

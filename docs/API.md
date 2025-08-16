@@ -1,73 +1,61 @@
-# App Engagement Intelligence API - Your Guide to Better User Experiences
+# App Engagement Intelligence API Documentation
 
-## Welcome! Let's Get You Started
+## Overview
 
-Hey there! 👋 Welcome to the App Engagement Intelligence API. Think of this as your toolkit for understanding how users interact with your app and helping them have a better experience. Whether you're trying to figure out why people drop off at certain points or want to send them helpful nudges at just the right moment, we've got you covered.
+The App Engagement Intelligence system provides RESTful APIs for managing user engagement, analytics, and compliance. This document describes all available endpoints, request/response formats, and authentication requirements.
 
-This guide will walk you through everything you need to know to get up and running. Don't worry - we'll explain things in plain English and give you plenty of examples along the way.
+**Base URL:** `https://api.ikk-classic.de/engagement/v1`
 
-**Where to find us:** `https://api.ikk-classic.de/engagement/v1`
+**Authentication:** Bearer token (JWT) required for all endpoints except health checks.
 
-**Security note:** You'll need a Bearer token (JWT) for most things here - think of it as your API key that proves you're allowed to access the data. The only exception is our health check endpoint, which is open for everyone to make sure everything's running smoothly.
+## Table of Contents
 
-## What You'll Find Here
+1. [Authentication](#authentication)
+2. [Health & Monitoring](#health--monitoring)
+3. [User Events](#user-events)
+4. [Analytics](#analytics)
+5. [Interventions](#interventions)
+6. [Compliance](#compliance)
+7. [Error Handling](#error-handling)
+8. [Rate Limiting](#rate-limiting)
 
-Think of this as your roadmap through the API. We've organized everything so you can quickly jump to what you need:
+## Authentication
 
-1. [Getting Authenticated](#authentication) - How to prove you're you
-2. [System Health](#health--monitoring) - Making sure everything's working
-3. [User Events](#user-events) - Tracking what people do in your app
-4. [Analytics](#analytics) - Making sense of all that data
-5. [Interventions](#interventions) - Helping users at the right moment
-6. [Compliance](#compliance) - Keeping everything legal and ethical
-7. [When Things Go Wrong](#error-handling) - Troubleshooting guide
-8. [Playing Nice](#rate-limiting) - Making sure everyone gets fair access
+### POST /auth/login
 
-## Getting Authenticated
+Authenticate user and receive JWT token.
 
-Before we dive into the fun stuff, let's get you authenticated. Think of this like getting a backstage pass - once you have it, you can access all the cool features.
-
-### Log In and Get Your Access Token
-
-Want to get started? Just send us your username and password, and we'll give you a special token that works like a temporary pass.
-
-**What to send us:**
-
+**Request:**
 ```json
 {
-  "username": "your_username_here",
-  "password": "your_super_secret_password"
+  "username": "string",
+  "password": "string"
 }
 ```
 
-**What you'll get back:**
-
+**Response:**
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "expiresIn": "24h",
   "user": {
-    "id": "your_unique_id",
-    "username": "your_username_here",
+    "id": "string",
+    "username": "string",
     "role": "admin|analyst|viewer"
   }
 }
 ```
 
-Pro tip: That token is good for 24 hours, so you don't need to log in constantly. Just keep it somewhere safe!
+### POST /auth/refresh
 
-### Need a Fresh Token?
+Refresh JWT token.
 
-Your token is about to expire? No worries! Just use your current token to get a shiny new one. It's like renewing your library card.
-
-**Just include your current token in the header:**
-
-```http
-Authorization: Bearer <your_current_token>
+**Headers:**
+```
+Authorization: Bearer <token>
 ```
 
-**And we'll send you back:**
-
+**Response:**
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -75,67 +63,58 @@ Authorization: Bearer <your_current_token>
 }
 ```
 
-## System Health & Monitoring
+## Health & Monitoring
 
-Let's make sure everything's running smoothly! These endpoints help you (and us) keep an eye on the system.
+### GET /health
 
-### Check If We're Up and Running
+System health check (no authentication required).
 
-This is like knocking on our door to see if anyone's home. You don't need any special permissions for this one - it's open to everyone.
-
-**What you'll get back tells you how we're doing:**
-
+**Response:**
 ```json
 {
-  "status": "healthy",
+  "status": "healthy|unhealthy",
   "timestamp": "2024-01-15T10:30:00Z",
   "version": "1.0.0",
   "components": {
-    "database": "healthy",
-    "redis": "healthy", 
-    "externalServices": "healthy"
+    "database": "healthy|unhealthy",
+    "redis": "healthy|unhealthy",
+    "externalServices": "healthy|unhealthy"
   },
   "uptime": 3600
 }
 ```
 
-If something's not quite right, you might see "unhealthy" instead. Don't panic - we're probably already on it!
+### GET /metrics
 
-### System Metrics (For the Tech-Savvy)
+Prometheus metrics endpoint (no authentication required).
 
-If you're into Prometheus metrics and want to hook this up to your monitoring dashboard, this endpoint's for you. It gives you all the technical details about how our system is performing.
+**Response:** Prometheus format metrics
 
-## User Events - The Heart of Everything
+## User Events
 
-This is where the magic happens! Every tap, swipe, and click in your app can become valuable data that helps you understand your users better.
+### POST /events
 
-### Tell Us What Your Users Are Doing
+Submit user interaction events.
 
-Think of this as your app's way of saying "Hey, something interesting just happened!" Whether someone viewed a page, completed a task, or maybe got frustrated and left - we want to know about it.
-
-**Here's how to send us events:**
-
-You'll need to include your authorization token in the header:
-
-```http
-Authorization: Bearer <your_token>
+**Headers:**
+```
+Authorization: Bearer <token>
 Content-Type: application/json
 ```
 
-**Then send us the juicy details:**
-
+**Request:**
 ```json
 {
   "events": [
     {
       "eventId": "evt_123456",
-      "userId": "user_789", 
+      "userId": "user_789",
       "sessionId": "session_abc",
       "timestamp": "2024-01-15T10:30:00Z",
-      "eventType": "page_view",
+      "eventType": "page_view|feature_usage|task_completion|abandonment",
       "metadata": {
         "screenName": "dashboard",
-        "featureId": "claims_view", 
+        "featureId": "claims_view",
         "duration": 30000,
         "success": true
       },
@@ -149,8 +128,7 @@ Content-Type: application/json
 }
 ```
 
-**We'll let you know how it went:**
-
+**Response:**
 ```json
 {
   "processed": 1,
@@ -159,39 +137,30 @@ Content-Type: application/json
 }
 ```
 
-**Event types you can track:**
-- `page_view` - Someone looked at a screen
-- `feature_usage` - They used a specific feature  
-- `task_completion` - They finished something important
-- `abandonment` - They left without finishing (happens to the best of us!)
+### GET /events/{userId}
 
-### Want to Look Up Someone's Activity?
+Retrieve user events (with privacy controls).
 
-Sometimes you need to see what a user has been up to (don't worry, we keep privacy in mind!). Here's how to get their recent events.
-
-**You'll need your token:**
-
-```http
-Authorization: Bearer <your_token>
+**Headers:**
+```
+Authorization: Bearer <token>
 ```
 
-**You can be picky about what you want to see:**
+**Query Parameters:**
+- `startDate` (optional): ISO 8601 date string
+- `endDate` (optional): ISO 8601 date string
+- `eventType` (optional): Filter by event type
+- `limit` (optional): Maximum number of events (default: 100, max: 1000)
+- `offset` (optional): Pagination offset
 
-- `startDate` (optional): Only show events after this date (use ISO 8601 format)
-- `endDate` (optional): Only show events before this date
-- `eventType` (optional): Filter by a specific type of event
-- `limit` (optional): How many events to return (default is 100, max is 1000)
-- `offset` (optional): Skip this many events (useful for pagination)
-
-**Here's what you'll get back:**
-
+**Response:**
 ```json
 {
   "events": [
     {
       "eventId": "evt_123456",
       "userId": "pseudo_abc123",
-      "sessionId": "session_xyz", 
+      "sessionId": "session_xyz",
       "timestamp": "2024-01-15T10:30:00Z",
       "eventType": "page_view",
       "metadata": {
@@ -209,29 +178,22 @@ Authorization: Bearer <your_token>
 }
 ```
 
-Notice how we pseudonymize the user ID? That's our way of protecting privacy while still giving you useful data.
+## Analytics
 
-## Analytics - Making Sense of It All
+### GET /analytics/dashboard
 
-Now for the fun part! Let's turn all those events into insights that actually help you improve your app.
+Get dashboard analytics data.
 
-### Your Analytics Dashboard
-
-This gives you the bird's-eye view of how things are going. Think of it as your app's health report card.
-
-**You'll need your token:**
-
-```http
-Authorization: Bearer <your_token>
+**Headers:**
+```
+Authorization: Bearer <token>
 ```
 
-**Tell us what timeframe you're interested in:**
+**Query Parameters:**
+- `timeRange`: `1h|24h|7d|30d|90d`
+- `metrics`: Comma-separated list of metrics to include
 
-- `timeRange`: Choose from `1h`, `24h`, `7d`, `30d`, or `90d`
-- `metrics`: Want specific metrics? Just list them separated by commas
-
-**Here's the kind of insights you'll get:**
-
+**Response:**
 ```json
 {
   "timeRange": "24h",
@@ -258,20 +220,16 @@ Authorization: Bearer <your_token>
 }
 ```
 
-Pretty cool, right? You can see not just the numbers, but trends over time and how different age groups behave.
+### GET /analytics/user-segments
 
-### Understanding Your User Groups
+Get user segmentation data.
 
-Ever wonder how different types of users behave? This endpoint breaks down your users into meaningful segments so you can understand patterns and tailor your approach.
-
-**You'll need your token:**
-
-```http
-Authorization: Bearer <your_token>
+**Headers:**
+```
+Authorization: Bearer <token>
 ```
 
-**Here's what you'll discover about your user segments:**
-
+**Response:**
 ```json
 {
   "segments": [
@@ -291,25 +249,20 @@ Authorization: Bearer <your_token>
 }
 ```
 
-This is super helpful for understanding who your power users are and what they love about your app!
+### GET /analytics/interventions
 
-### How Well Are Your Interventions Working?
+Get intervention effectiveness analytics.
 
-Want to know if those helpful nudges and reminders are actually helping? This endpoint shows you which interventions are hitting the mark and which ones might need some tweaking.
-
-**You'll need your token:**
-
-```http
-Authorization: Bearer <your_token>
+**Headers:**
+```
+Authorization: Bearer <token>
 ```
 
-**You can filter what you want to see:**
+**Query Parameters:**
+- `timeRange`: `1h|24h|7d|30d|90d`
+- `interventionType`: Filter by intervention type
 
-- `timeRange`: Pick from `1h`, `24h`, `7d`, `30d`, or `90d`
-- `interventionType`: Focus on a specific type of intervention
-
-**Here's the kind of performance data you'll get:**
-
+**Response:**
 ```json
 {
   "interventions": [
@@ -337,25 +290,19 @@ Authorization: Bearer <your_token>
 }
 ```
 
-Look at that! Not only can you see how well your interventions performed, but you can also see the real business impact - like how many support calls you avoided and how much time (and money) you saved.
+## Interventions
 
-## Interventions - Helping Users at Just the Right Moment
+### POST /interventions
 
-This is where you can send personalized, helpful messages to your users when they need them most. Think of it as being a helpful friend who knows exactly what to say and when to say it.
+Create and deliver intervention.
 
-### Send a Helpful Intervention
-
-Ready to help a user get unstuck or complete an important task? Here's how to create and send an intervention.
-
-**You'll need your token:**
-
-```http
-Authorization: Bearer <your_token>
+**Headers:**
+```
+Authorization: Bearer <token>
 Content-Type: application/json
 ```
 
-**Here's how to set up your intervention:**
-
+**Request:**
 ```json
 {
   "userId": "user_123",
@@ -377,12 +324,11 @@ Content-Type: application/json
 }
 ```
 
-**We'll tell you how it went:**
-
+**Response:**
 ```json
 {
   "interventionId": "int_789456",
-  "status": "scheduled",
+  "status": "scheduled|delivered|failed",
   "deliveryDetails": [
     {
       "channel": "push",
@@ -393,11 +339,6 @@ Content-Type: application/json
   ]
 }
 ```
-
-**Delivery status options:**
-- `scheduled` - We've got it queued up
-- `delivered` - Successfully sent!
-- `failed` - Oops, something went wrong (we'll tell you what)
 
 ### GET /interventions/{interventionId}
 
@@ -458,27 +399,23 @@ Content-Type: application/json
 }
 ```
 
-## Compliance - Keeping Everything Legal and Ethical
+## Compliance
 
-Privacy matters! This section helps you manage user consent and stay compliant with GDPR and other privacy regulations. We make it easy to do the right thing.
+### POST /compliance/consent
 
-### Managing User Consent
+Manage user consent.
 
-When users give or update their consent preferences, this is how you let us know about it. Think of it as keeping a clear record of what users are comfortable with.
-
-**You'll need your token:**
-
-```http
-Authorization: Bearer <your_token>
+**Headers:**
+```
+Authorization: Bearer <token>
 Content-Type: application/json
 ```
 
-**Here's how to record consent:**
-
+**Request:**
 ```json
 {
   "userId": "user_123",
-  "consentType": "analytics",
+  "consentType": "analytics|personalization|marketing",
   "granted": true,
   "metadata": {
     "ipAddress": "192.168.1.1",
@@ -488,13 +425,7 @@ Content-Type: application/json
 }
 ```
 
-**Consent types you can track:**
-- `analytics` - Can we analyze their usage patterns?
-- `personalization` - Can we customize their experience?
-- `marketing` - Can we send them promotional content?
-
-**We'll confirm we've recorded it:**
-
+**Response:**
 ```json
 {
   "consentId": "consent_456789",
@@ -506,7 +437,7 @@ Content-Type: application/json
 }
 ```
 
-### Check What a User Has Consented To
+### GET /compliance/consent/{userId}
 
 Get user consent status.
 
@@ -596,11 +527,9 @@ Authorization: Bearer <token>
 }
 ```
 
-## When Things Go Wrong - Error Handling
+## Error Handling
 
-Don't worry, we all make mistakes! When something doesn't go as planned, we'll give you a clear explanation of what happened and how to fix it.
-
-**Here's what our error messages look like:**
+All API endpoints return consistent error responses:
 
 ```json
 {
@@ -619,37 +548,34 @@ Don't worry, we all make mistakes! When something doesn't go as planned, we'll g
 }
 ```
 
-### What Different Error Codes Mean
+### Error Codes
 
-Think of these as our way of telling you specifically what went wrong:
+- `VALIDATION_ERROR` (400): Invalid request parameters
+- `UNAUTHORIZED` (401): Authentication required or invalid token
+- `FORBIDDEN` (403): Insufficient permissions
+- `NOT_FOUND` (404): Resource not found
+- `CONFLICT` (409): Resource conflict (e.g., duplicate consent)
+- `RATE_LIMIT_EXCEEDED` (429): Too many requests
+- `INTERNAL_ERROR` (500): Internal server error
+- `SERVICE_UNAVAILABLE` (503): Service temporarily unavailable
 
-- `VALIDATION_ERROR` (400): You sent us something we couldn't understand - check your request format
-- `UNAUTHORIZED` (401): You need to log in or your token has expired
-- `FORBIDDEN` (403): You're logged in, but you don't have permission for this action
-- `NOT_FOUND` (404): We couldn't find what you're looking for
-- `CONFLICT` (409): There's a conflict (like trying to create something that already exists)
-- `RATE_LIMIT_EXCEEDED` (429): Whoa there! You're making requests too quickly
-- `INTERNAL_ERROR` (500): Something's wrong on our end (we'll fix it!)
-- `SERVICE_UNAVAILABLE` (503): We're temporarily down for maintenance
+## Rate Limiting
 
-## Playing Nice - Rate Limiting
+API endpoints are rate-limited to prevent abuse:
 
-We want everyone to have a good experience, so we have some gentle limits on how many requests you can make:
+- **Default limit:** 100 requests per 15 minutes per IP address
+- **Authenticated users:** 500 requests per 15 minutes per user
+- **Admin users:** 1000 requests per 15 minutes per user
 
-**The rules:**
-- **If you're not logged in:** 100 requests per 15 minutes per IP address
-- **Regular users:** 500 requests per 15 minutes
-- **Admin users:** 1000 requests per 15 minutes (you get the VIP treatment!)
+Rate limit headers are included in all responses:
 
-**We'll always tell you where you stand:**
-
-```http
+```
 X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 95
 X-RateLimit-Reset: 1642248600
 ```
 
-**If you hit the limit, we'll let you know:**
+When rate limit is exceeded, a 429 status code is returned:
 
 ```json
 {
@@ -661,15 +587,9 @@ X-RateLimit-Reset: 1642248600
 }
 ```
 
-Just take a little break and you'll be good to go!
+## SDK and Integration Examples
 
-## Ready to Code? SDK and Examples
-
-We've made it super easy for you to get started, no matter what tech stack you're using.
-
-### Our JavaScript/TypeScript SDK (Recommended!)
-
-This is probably the easiest way to get up and running:
+### JavaScript/TypeScript SDK
 
 ```typescript
 import { EngagementIntelligenceClient } from '@ikk-classic/engagement-intelligence-sdk';
@@ -679,7 +599,7 @@ const client = new EngagementIntelligenceClient({
   apiKey: 'your-api-key'
 });
 
-// Track what users are doing
+// Submit user event
 await client.events.submit({
   eventId: 'evt_123',
   userId: 'user_456',
@@ -687,16 +607,14 @@ await client.events.submit({
   metadata: { screenName: 'dashboard' }
 });
 
-// Get insights about your users
+// Get analytics
 const analytics = await client.analytics.getDashboard('24h');
 ```
 
-### Prefer cURL? We've Got You Covered
-
-Sometimes you just want to test things out quickly. Here are some copy-paste examples:
+### cURL Examples
 
 ```bash
-# Send a user event
+# Submit user event
 curl -X POST https://api.ikk-classic.de/engagement/v1/events \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
@@ -709,23 +627,23 @@ curl -X POST https://api.ikk-classic.de/engagement/v1/events \
     }]
   }'
 
-# Check your analytics dashboard
+# Get dashboard analytics
 curl -X GET "https://api.ikk-classic.de/engagement/v1/analytics/dashboard?timeRange=24h" \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
-## Webhooks - Real-Time Updates
+## Webhooks
 
-Want to know the moment something happens? Set up webhooks and we'll notify you instantly!
+The system supports webhooks for real-time notifications:
 
-**We'll ping you about these events:**
+### Webhook Events
 
-- `intervention.delivered`: Your intervention was successfully delivered
-- `intervention.failed`: Something went wrong with delivery (we'll tell you what)
-- `user.consent_changed`: A user updated their privacy preferences
-- `compliance.violation`: We detected a compliance issue that needs attention
+- `intervention.delivered`: Intervention successfully delivered
+- `intervention.failed`: Intervention delivery failed
+- `user.consent_changed`: User consent status changed
+- `compliance.violation`: Compliance violation detected
 
-**Here's what our webhook payload looks like:**
+### Webhook Payload
 
 ```json
 {
@@ -741,12 +659,9 @@ Want to know the moment something happens? Set up webhooks and we'll notify you 
 }
 ```
 
-## Need Help?
+## Support
 
-We're here for you! Here's how to get support:
-
-- **Documentation:** [https://docs.ikk-classic.de/engagement-intelligence](https://docs.ikk-classic.de/engagement-intelligence)
-- **Support Email:** [api-support@ikk-classic.de](mailto:api-support@ikk-classic.de)
-- **Status Page:** [https://status.ikk-classic.de](https://status.ikk-classic.de)
-
-Happy coding! 🚀
+For API support and questions:
+- **Documentation:** https://docs.ikk-classic.de/engagement-intelligence
+- **Support Email:** api-support@ikk-classic.de
+- **Status Page:** https://status.ikk-classic.de

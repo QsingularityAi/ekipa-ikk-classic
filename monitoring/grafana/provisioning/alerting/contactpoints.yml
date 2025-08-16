@@ -1,0 +1,101 @@
+# Grafana Contact Points Configuration
+# This file defines notification channels for alerts
+
+apiVersion: 1
+
+contactPoints:
+  - orgId: 1
+    name: email-critical
+    receivers:
+      - uid: email-critical-uid
+        type: email
+        settings:
+          addresses: "devops-alerts@company.com;admin@company.com"
+          subject: "[CRITICAL] Grafana Alert: {{ .GroupLabels.alertname }}"
+          message: |
+            **Alert:** {{ .GroupLabels.alertname }}
+            **Status:** {{ .Status }}
+            **Severity:** {{ .GroupLabels.severity }}
+            **Team:** {{ .GroupLabels.team }}
+            
+            **Summary:** {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}
+            
+            **Description:** {{ range .Alerts }}{{ .Annotations.description }}{{ end }}
+            
+            **Time:** {{ .CommonAnnotations.startsAt }}
+            
+            **Dashboard:** [View Dashboard](http://localhost:3001)
+        disableResolveMessage: false
+
+  - orgId: 1
+    name: email-warning
+    receivers:
+      - uid: email-warning-uid
+        type: email
+        settings:
+          addresses: "team-alerts@company.com"
+          subject: "[WARNING] Grafana Alert: {{ .GroupLabels.alertname }}"
+          message: |
+            **Alert:** {{ .GroupLabels.alertname }}
+            **Status:** {{ .Status }}
+            **Severity:** {{ .GroupLabels.severity }}
+            **Team:** {{ .GroupLabels.team }}
+            
+            **Summary:** {{ range .Alerts }}{{ .Annotations.summary }}{{ end }}
+            
+            **Description:** {{ range .Alerts }}{{ .Annotations.description }}{{ end }}
+            
+            **Time:** {{ .CommonAnnotations.startsAt }}
+            
+            **Dashboard:** [View Dashboard](http://localhost:3001)
+        disableResolveMessage: false
+
+  - orgId: 1
+    name: webhook-integration
+    receivers:
+      - uid: webhook-integration-uid
+        type: webhook
+        settings:
+          url: "http://localhost:3000/api/webhooks/alerts"
+          httpMethod: "POST"
+          maxAlerts: 0
+          title: "Grafana Alert: {{ .GroupLabels.alertname }}"
+          message: |
+            {
+              "alert": "{{ .GroupLabels.alertname }}",
+              "status": "{{ .Status }}",
+              "severity": "{{ .GroupLabels.severity }}",
+              "team": "{{ .GroupLabels.team }}",
+              "summary": "{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}",
+              "description": "{{ range .Alerts }}{{ .Annotations.description }}{{ end }}",
+              "timestamp": "{{ .CommonAnnotations.startsAt }}",
+              "dashboard_url": "http://localhost:3001"
+            }
+        disableResolveMessage: false
+
+  - orgId: 1
+    name: slack-devops
+    receivers:
+      - uid: slack-devops-uid
+        type: slack
+        settings:
+          url: "${SLACK_WEBHOOK_URL}"
+          channel: "#devops-alerts"
+          username: "Grafana"
+          title: "{{ .GroupLabels.alertname }}"
+          text: |
+            **Status:** {{ .Status }}
+            **Severity:** {{ .GroupLabels.severity }}
+            **Team:** {{ .GroupLabels.team }}
+            
+            {{ range .Alerts }}
+            **Summary:** {{ .Annotations.summary }}
+            **Description:** {{ .Annotations.description }}
+            {{ end }}
+            
+            <http://localhost:3001|View Dashboard>
+          color: |
+            {{ if eq .Status "firing" }}
+              {{ if eq .GroupLabels.severity "critical" }}danger{{ else }}warning{{ end }}
+            {{ else }}good{{ end }}
+        disableResolveMessage: false

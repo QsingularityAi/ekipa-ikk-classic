@@ -1,0 +1,23 @@
+apiVersion: 1
+
+datasources:
+  - name: JSON API
+    type: marcusolsson-json-datasource
+    access: proxy
+    url: http://localhost:3000/api
+    editable: true
+    jsonData:
+      timeout: 10
+      cacheDurationSeconds: 30
+      keepCookies: []
+      queryParams: ""
+      headers:
+        - name: "Content-Type"
+          value: "application/json"
+        - name: "Accept"
+          value: "application/json"
+      tlsSkipVerify: false
+      httpMethod: "GET"
+      authenticationType: "none"
+    secureJsonData: {}
+    isDefault: false

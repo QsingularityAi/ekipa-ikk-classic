@@ -1,0 +1,705 @@
+# Grafana Alert Rules Configuration
+# This file defines alert rules for system and business metrics
+
+apiVersion: 1
+
+groups:
+  - name: system_metrics
+    orgId: 1
+    folder: System Alerts
+    interval: 1m
+    rules:
+      - uid: high_error_rate
+        title: High Error Rate Alert
+        condition: C
+        data:
+          - refId: A
+            queryType: ""
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasource:
+              type: prometheus
+              uid: prometheus
+            model:
+              expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) * 100
+              interval: ""
+              refId: A
+          - refId: B
+            queryType: ""
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 5
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              reducer: last
+              refId: B
+              type: reduce
+          - refId: C
+            queryType: ""
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 5
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - B
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: B
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: NoData
+        execErrState: Alerting
+        for: 2m
+        annotations:
+          description: "Error rate is {{ $value }}% which is above the 5% threshold"
+          runbook_url: ""
+          summary: "High error rate detected"
+        labels:
+          severity: critical
+          team: devops
+
+      - uid: slow_api_response
+        title: Slow API Response Time Alert
+        condition: C
+        data:
+          - refId: A
+            queryType: ""
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasource:
+              type: prometheus
+              uid: prometheus
+            model:
+              expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))
+              interval: ""
+              refId: A
+          - refId: B
+            queryType: ""
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 2
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              reducer: last
+              refId: B
+              type: reduce
+          - refId: C
+            queryType: ""
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 2
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - B
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: B
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: NoData
+        execErrState: Alerting
+        for: 2m
+        annotations:
+          description: "API response time is {{ $value }}s which is above the 2s threshold"
+          runbook_url: ""
+          summary: "Slow API response time detected"
+        labels:
+          severity: warning
+          team: devops
+
+      - uid: high_cpu_usage
+        title: High CPU Usage Alert
+        condition: C
+        data:
+          - refId: A
+            queryType: ""
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasource:
+              type: prometheus
+              uid: prometheus
+            model:
+              expr: rate(process_cpu_seconds_total[5m]) * 100
+              interval: ""
+              refId: A
+          - refId: B
+            queryType: ""
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 90
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              reducer: last
+              refId: B
+              type: reduce
+          - refId: C
+            queryType: ""
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 90
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - B
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: B
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: NoData
+        execErrState: Alerting
+        for: 5m
+        annotations:
+          description: "CPU usage is {{ $value }}% which is above the 90% threshold"
+          runbook_url: ""
+          summary: "High CPU usage detected"
+        labels:
+          severity: critical
+          team: devops
+
+      - uid: high_memory_usage
+        title: High Memory Usage Alert
+        condition: C
+        data:
+          - refId: A
+            queryType: ""
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasource:
+              type: prometheus
+              uid: prometheus
+            model:
+              expr: (process_resident_memory_bytes / (1024 * 1024 * 1024)) / (node_memory_MemTotal_bytes / (1024 * 1024 * 1024)) * 100
+              interval: ""
+              refId: A
+          - refId: B
+            queryType: ""
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 85
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              reducer: last
+              refId: B
+              type: reduce
+          - refId: C
+            queryType: ""
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 85
+                      - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - B
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: B
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: NoData
+        execErrState: Alerting
+        for: 5m
+        annotations:
+          description: "Memory usage is {{ $value }}% which is above the 85% threshold"
+          runbook_url: ""
+          summary: "High memory usage detected"
+        labels:
+          severity: warning
+          team: devops
+
+  - name: business_metrics
+    orgId: 1
+    folder: Business Alerts
+    interval: 5m
+    rules:
+      - uid: low_user_engagement
+        title: Low User Engagement Alert
+        condition: C
+        data:
+          - refId: A
+            queryType: ""
+            relativeTimeRange:
+              from: 86400
+              to: 0
+            datasource:
+              type: postgres
+              uid: postgresql
+            model:
+              format: time_series
+              group: []
+              metricColumn: none
+              rawQuery: true
+              rawSql: |
+                SELECT 
+                  DATE_TRUNC('hour', timestamp) as time,
+                  COUNT(DISTINCT user_id) as active_users
+                FROM analytics.user_events 
+                WHERE timestamp > NOW() - INTERVAL '24 hours'
+                GROUP BY time
+                ORDER BY time
+              refId: A
+              select:
+                - - params:
+                      - value
+                    type: column
+              table: user_events
+              timeColumn: timestamp
+              timeColumnType: timestamp
+              where:
+                - name: $__timeFilter
+                  params: []
+                  type: macro
+          - refId: B
+            queryType: ""
+            relativeTimeRange:
+              from: 172800
+              to: 86400
+            datasource:
+              type: postgres
+              uid: postgresql
+            model:
+              format: time_series
+              group: []
+              metricColumn: none
+              rawQuery: true
+              rawSql: |
+                SELECT 
+                  DATE_TRUNC('hour', timestamp) as time,
+                  COUNT(DISTINCT user_id) as active_users
+                FROM analytics.user_events 
+                WHERE timestamp > NOW() - INTERVAL '48 hours' AND timestamp < NOW() - INTERVAL '24 hours'
+                GROUP BY time
+                ORDER BY time
+              refId: B
+              select:
+                - - params:
+                      - value
+                    type: column
+              table: user_events
+              timeColumn: timestamp
+              timeColumnType: timestamp
+              where:
+                - name: $__timeFilter
+                  params: []
+                  type: macro
+          - refId: C
+            queryType: ""
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - -20
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - C
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: ((A - B) / B) * 100
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: math
+        noDataState: NoData
+        execErrState: Alerting
+        for: 10m
+        annotations:
+          description: "User engagement has dropped by {{ $value }}% compared to the previous period"
+          runbook_url: ""
+          summary: "Significant drop in user engagement detected"
+        labels:
+          severity: warning
+          team: product
+
+      - uid: database_connection_failure
+        title: Database Connection Failure Alert
+        condition: C
+        data:
+          - refId: A
+            queryType: ""
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasource:
+              type: prometheus
+              uid: prometheus
+            model:
+              expr: up{job="postgresql"}
+              interval: ""
+              refId: A
+          - refId: B
+            queryType: ""
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 1
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              reducer: last
+              refId: B
+              type: reduce
+          - refId: C
+            queryType: ""
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 1
+                      - 0
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - B
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: B
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 1m
+        annotations:
+          description: "Database connection is down or unreachable"
+          runbook_url: ""
+          summary: "Database connection failure detected"
+        labels:
+          severity: critical
+          team: devops
+
+      - uid: data_pipeline_issues
+        title: Data Pipeline Issues Alert
+        condition: C
+        data:
+          - refId: A
+            queryType: ""
+            relativeTimeRange:
+              from: 1800
+              to: 0
+            datasource:
+              type: postgres
+              uid: postgresql
+            model:
+              format: time_series
+              group: []
+              metricColumn: none
+              rawQuery: true
+              rawSql: |
+                SELECT 
+                  EXTRACT(EPOCH FROM NOW()) as time,
+                  COUNT(*) as event_count
+                FROM analytics.user_events 
+                WHERE timestamp > NOW() - INTERVAL '30 minutes'
+              refId: A
+              select:
+                - - params:
+                      - value
+                    type: column
+              table: user_events
+              timeColumn: timestamp
+              timeColumnType: timestamp
+              where:
+                - name: $__timeFilter
+                  params: []
+                  type: macro
+          - refId: B
+            queryType: ""
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 10
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              reducer: last
+              refId: B
+              type: reduce
+          - refId: C
+            queryType: ""
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 10
+                      - 0
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - B
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: B
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 5m
+        annotations:
+          description: "Data pipeline appears to be stalled - only {{ $value }} events in the last 30 minutes"
+          runbook_url: ""
+          summary: "Data pipeline processing issues detected"
+        labels:
+          severity: warning
+          team: data

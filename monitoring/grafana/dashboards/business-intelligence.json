@@ -1,0 +1,1716 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Change %"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 0
+                    },
+                    {
+                      "color": "green",
+                      "value": 10
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "countRows": false
+        }
+      },
+      "pluginVersion": "10.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH current_period AS (\n  SELECT \n    SUM(digital_tasks_completed * 5.0) as current_savings,\n    COUNT(DISTINCT user_id) as current_users\n  FROM analytics.user_profiles \n  WHERE updated_at >= NOW() - INTERVAL '${time_period}'\n),\nprevious_period AS (\n  SELECT \n    SUM(digital_tasks_completed * 5.0) as previous_savings,\n    COUNT(DISTINCT user_id) as previous_users\n  FROM analytics.user_profiles \n  WHERE updated_at >= NOW() - INTERVAL '${time_period}' * 2\n    AND updated_at < NOW() - INTERVAL '${time_period}'\n)\nSELECT \n  'Total Cost Savings' as \"Metric\",\n  COALESCE(cp.current_savings, 0) as \"Current Period ($)\",\n  COALESCE(pp.previous_savings, 0) as \"Previous Period ($)\",\n  CASE \n    WHEN pp.previous_savings > 0 THEN \n      ROUND(((cp.current_savings - pp.previous_savings) / pp.previous_savings * 100)::numeric, 2)\n    ELSE 0\n  END as \"Change %\",\n  cp.current_users as \"Active Users\"\nFROM current_period cp\nCROSS JOIN previous_period pp;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Cost Savings Metrics",
+      "type": "table",
+      "exportOptions": {
+        "csv": {
+          "enabled": true,
+          "filename": "cost-savings-metrics"
+        }
+      }
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT \n  DATE_TRUNC('day', updated_at) as time,\n  SUM(digital_tasks_completed * 5.0) as \"Daily Cost Savings\"\nFROM analytics.user_profiles \nWHERE updated_at >= $__timeFrom() AND updated_at < $__timeTo()\n  AND ($__all(channel) OR communication_channels && ARRAY[$channel])\nGROUP BY time\nORDER BY time;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Cost Savings Trend",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1000
+              },
+              {
+                "color": "green",
+                "value": 5000
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {}
+      },
+      "pluginVersion": "10.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT \n  SUM(digital_tasks_completed * 5.0) as \"Total Savings\"\nFROM analytics.user_profiles \nWHERE updated_at >= NOW() - INTERVAL '${time_period}'\n  AND ($__all(channel) OR communication_channels && ARRAY[$channel]);",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Total Cost Savings",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 10
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 6,
+        "y": 8
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH current_period AS (\n  SELECT SUM(digital_tasks_completed * 5.0) as current_savings\n  FROM analytics.user_profiles \n  WHERE updated_at >= NOW() - INTERVAL '${time_period}'\n    AND ($__all(channel) OR communication_channels && ARRAY[$channel])\n),\nprevious_period AS (\n  SELECT SUM(digital_tasks_completed * 5.0) as previous_savings\n  FROM analytics.user_profiles \n  WHERE updated_at >= NOW() - INTERVAL '${time_period}' * 2\n    AND updated_at < NOW() - INTERVAL '${time_period}'\n    AND ($__all(channel) OR communication_channels && ARRAY[$channel])\n)\nSELECT \n  CASE \n    WHEN pp.previous_savings > 0 THEN \n      ROUND(((cp.current_savings - pp.previous_savings) / pp.previous_savings * 100)::numeric, 2)\n    ELSE 0\n  END as \"Savings Growth %\"\nFROM current_period cp\nCROSS JOIN previous_period pp;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Savings Growth Rate",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Current Period Calls"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "red"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Previous Period Calls"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "blue"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "lastNotNull"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "-- Current period call volume trend\nSELECT \n  DATE_TRUNC('day', updated_at) as time,\n  SUM(phone_calls_last_month) as \"Current Period Calls\"\nFROM analytics.user_profiles \nWHERE updated_at >= $__timeFrom() AND updated_at < $__timeTo()\n  AND ($__all(channel) OR communication_channels && ARRAY[$channel])\nGROUP BY time\nORDER BY time;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        },
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "-- Previous period call volume for comparison\nWITH time_diff AS (\n  SELECT ($__timeTo()::timestamp - $__timeFrom()::timestamp) as period_length\n),\nprevious_period_data AS (\n  SELECT \n    DATE_TRUNC('day', updated_at + (SELECT period_length FROM time_diff)) as time,\n    SUM(phone_calls_last_month) as call_volume\n  FROM analytics.user_profiles \n  WHERE updated_at >= ($__timeFrom()::timestamp - (SELECT period_length FROM time_diff))\n    AND updated_at < $__timeFrom()\n    AND ($__all(channel) OR communication_channels && ARRAY[$channel])\n  GROUP BY DATE_TRUNC('day', updated_at)\n)\nSELECT \n  time,\n  call_volume as \"Previous Period Calls\"\nFROM previous_period_data\nORDER BY time;",
+          "refId": "B",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Call Volume Reduction Trend",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Reduction %"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 5
+                    },
+                    {
+                      "color": "green",
+                      "value": 15
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Cost Impact ($)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 500
+                    },
+                    {
+                      "color": "green",
+                      "value": 2000
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "id": 6,
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "countRows": false
+        }
+      },
+      "pluginVersion": "10.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH current_period AS (\n  SELECT \n    SUM(phone_calls_last_month) as current_calls,\n    COUNT(DISTINCT user_id) as current_users\n  FROM analytics.user_profiles \n  WHERE updated_at >= NOW() - INTERVAL '${time_period}'\n    AND ($__all(channel) OR communication_channels && ARRAY[$channel])\n),\nprevious_period AS (\n  SELECT \n    SUM(phone_calls_last_month) as previous_calls,\n    COUNT(DISTINCT user_id) as previous_users\n  FROM analytics.user_profiles \n  WHERE updated_at >= NOW() - INTERVAL '${time_period}' * 2\n    AND updated_at < NOW() - INTERVAL '${time_period}'\n    AND ($__all(channel) OR communication_channels && ARRAY[$channel])\n),\ncost_calculation AS (\n  SELECT \n    cp.current_calls,\n    pp.previous_calls,\n    CASE \n      WHEN pp.previous_calls > 0 THEN \n        ROUND(((pp.previous_calls - cp.current_calls) / pp.previous_calls::decimal * 100), 2)\n      ELSE 0\n    END as reduction_percentage,\n    -- Assuming $15 cost per call (industry average for customer service calls)\n    (COALESCE(pp.previous_calls, 0) - COALESCE(cp.current_calls, 0)) * 15 as cost_impact\n  FROM current_period cp\n  CROSS JOIN previous_period pp\n)\nSELECT \n  'Call Volume Analysis' as \"Metric\",\n  COALESCE(current_calls, 0) as \"Current Period Calls\",\n  COALESCE(previous_calls, 0) as \"Previous Period Calls\",\n  COALESCE(previous_calls, 0) - COALESCE(current_calls, 0) as \"Calls Reduced\",\n  reduction_percentage as \"Reduction %\",\n  cost_impact as \"Cost Impact ($)\"\nFROM cost_calculation;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Call Volume Reduction Analysis", 
+      "type": "table",
+      "exportOptions": {
+        "csv": {
+          "enabled": true,
+          "filename": "call-volume-reduction-analysis"
+        }
+      }
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Digital Transactions",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 3,
+            "pointSize": 6,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "line"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1000
+              },
+              {
+                "color": "red",
+                "value": 2000
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Digital Transactions"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "blue"
+                }
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 3
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Growth Trend"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "green"
+                }
+              },
+              {
+                "id": "custom.drawStyle",
+                "value": "line"
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [10, 10],
+                  "fill": "dash"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Target"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "orange"
+                }
+              },
+              {
+                "id": "custom.drawStyle",
+                "value": "line"
+              },
+              {
+                "id": "custom.lineStyle",
+                "value": {
+                  "dash": [5, 5],
+                  "fill": "dash"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "10.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "-- Digital transaction volume over time\nSELECT \n  DATE_TRUNC('day', ue.timestamp) as time,\n  COUNT(*) as \"Digital Transactions\"\nFROM analytics.user_events ue\nWHERE ue.timestamp >= $__timeFrom() AND ue.timestamp < $__timeTo()\n  AND ue.event_type = 'task_completion'\n  AND ue.success = true\n  AND ($__all(channel) OR ue.preferred_channel = ANY(ARRAY[$channel]))\nGROUP BY time\nORDER BY time;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        },
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "-- Growth trend line (7-day moving average)\nWITH daily_transactions AS (\n  SELECT \n    DATE_TRUNC('day', ue.timestamp) as day,\n    COUNT(*) as transaction_count\n  FROM analytics.user_events ue\n  WHERE ue.timestamp >= $__timeFrom() - INTERVAL '7 days' AND ue.timestamp < $__timeTo()\n    AND ue.event_type = 'task_completion'\n    AND ue.success = true\n    AND ($__all(channel) OR ue.preferred_channel = ANY(ARRAY[$channel]))\n  GROUP BY day\n),\nmoving_average AS (\n  SELECT \n    day as time,\n    AVG(transaction_count) OVER (\n      ORDER BY day \n      ROWS BETWEEN 6 PRECEDING AND CURRENT ROW\n    ) as \"Growth Trend\"\n  FROM daily_transactions\n  WHERE day >= $__timeFrom()\n)\nSELECT time, \"Growth Trend\" FROM moving_average ORDER BY time;",
+          "refId": "B",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        },
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "-- Target line based on historical growth rate\nWITH historical_growth AS (\n  SELECT \n    AVG(daily_count) * 1.15 as target_value -- 15% growth target\n  FROM (\n    SELECT \n      DATE_TRUNC('day', ue.timestamp) as day,\n      COUNT(*) as daily_count\n    FROM analytics.user_events ue\n    WHERE ue.timestamp >= $__timeFrom() - INTERVAL '30 days' AND ue.timestamp < $__timeFrom()\n      AND ue.event_type = 'task_completion'\n      AND ue.success = true\n      AND ($__all(channel) OR ue.preferred_channel = ANY(ARRAY[$channel]))\n    GROUP BY day\n  ) historical\n),\ntime_series AS (\n  SELECT generate_series(\n    $__timeFrom()::timestamp,\n    $__timeTo()::timestamp,\n    '1 day'::interval\n  ) as time\n)\nSELECT \n  ts.time,\n  hg.target_value as \"Target\"\nFROM time_series ts\nCROSS JOIN historical_growth hg\nORDER BY ts.time;",
+          "refId": "C",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Digital Transaction Growth",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Growth Rate %"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 5
+                    },
+                    {
+                      "color": "green",
+                      "value": 15
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Adoption Curve"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 30
+                    },
+                    {
+                      "color": "green",
+                      "value": 60
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      },
+      "id": 8,
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false,
+          "reducer": [
+            "sum"
+          ],
+          "countRows": false
+        }
+      },
+      "pluginVersion": "10.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH current_period AS (\n  SELECT \n    COUNT(*) as current_transactions,\n    COUNT(DISTINCT ue.user_id) as current_active_users\n  FROM analytics.user_events ue\n  WHERE ue.timestamp >= NOW() - INTERVAL '${time_period}'\n    AND ue.event_type = 'task_completion'\n    AND ue.success = true\n    AND ($__all(channel) OR ue.preferred_channel = ANY(ARRAY[$channel]))\n),\nprevious_period AS (\n  SELECT \n    COUNT(*) as previous_transactions,\n    COUNT(DISTINCT ue.user_id) as previous_active_users\n  FROM analytics.user_events ue\n  WHERE ue.timestamp >= NOW() - INTERVAL '${time_period}' * 2\n    AND ue.timestamp < NOW() - INTERVAL '${time_period}'\n    AND ue.event_type = 'task_completion'\n    AND ue.success = true\n    AND ($__all(channel) OR ue.preferred_channel = ANY(ARRAY[$channel]))\n),\ntotal_users AS (\n  SELECT COUNT(DISTINCT user_id) as total_user_count\n  FROM analytics.user_profiles\n  WHERE updated_at >= NOW() - INTERVAL '${time_period}'\n),\ngrowth_calculation AS (\n  SELECT \n    cp.current_transactions,\n    pp.previous_transactions,\n    cp.current_active_users,\n    tu.total_user_count,\n    CASE \n      WHEN pp.previous_transactions > 0 THEN \n        ROUND(((cp.current_transactions - pp.previous_transactions) / pp.previous_transactions::decimal * 100), 2)\n      ELSE 0\n    END as growth_rate,\n    ROUND((cp.current_active_users / tu.total_user_count::decimal * 100), 2) as adoption_rate\n  FROM current_period cp\n  CROSS JOIN previous_period pp\n  CROSS JOIN total_users tu\n)\nSELECT \n  'Digital Transaction Analysis' as \"Metric\",\n  current_transactions as \"Current Period Transactions\",\n  previous_transactions as \"Previous Period Transactions\",\n  current_transactions - previous_transactions as \"Net Growth\",\n  growth_rate as \"Growth Rate %\",\n  current_active_users as \"Active Digital Users\",\n  adoption_rate as \"Adoption Curve\"\nFROM growth_calculation;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Digital Transaction Growth Analysis",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ROI %"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 100
+                    },
+                    {
+                      "color": "green",
+                      "value": 200
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Payback Period (Months)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 12
+                    },
+                    {
+                      "color": "red",
+                      "value": 24
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Investment ($)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total Savings ($)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 33
+      },
+      "id": 9,
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": true,
+          "reducer": [
+            "sum"
+          ],
+          "countRows": false
+        }
+      },
+      "pluginVersion": "10.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH investment_costs AS (\n  -- Platform development and implementation costs\n  SELECT \n    'Platform Development' as investment_category,\n    250000 as investment_amount, -- Initial platform development cost\n    'Initial development, infrastructure setup, and team training' as description\n  UNION ALL\n  SELECT \n    'Annual Operations',\n    120000, -- Annual operational costs (maintenance, hosting, support)\n    'Annual maintenance, hosting, and operational support costs'\n  UNION ALL\n  SELECT \n    'Marketing & Training',\n    50000, -- User adoption and training costs\n    'User onboarding, training materials, and adoption campaigns'\n),\ncurrent_savings AS (\n  SELECT \n    SUM(digital_tasks_completed * 5.0) as total_cost_savings, -- $5 per digital task vs traditional\n    COUNT(DISTINCT user_id) as active_users,\n    AVG(digital_tasks_completed) as avg_tasks_per_user\n  FROM analytics.user_profiles \n  WHERE updated_at >= NOW() - INTERVAL '${time_period}'\n    AND ($__all(channel) OR communication_channels && ARRAY[$channel])\n),\ncall_reduction_savings AS (\n  SELECT \n    COALESCE(SUM(\n      CASE \n        WHEN phone_calls_last_month > 0 THEN \n          -- Estimate call reduction based on digital adoption\n          (phone_calls_last_month * 0.3) * 15 -- 30% call reduction at $15 per call\n        ELSE 0\n      END\n    ), 0) as call_savings\n  FROM analytics.user_profiles \n  WHERE updated_at >= NOW() - INTERVAL '${time_period}'\n    AND digital_tasks_completed > 0\n    AND ($__all(channel) OR communication_channels && ARRAY[$channel])\n),\nannualized_projections AS (\n  SELECT \n    cs.total_cost_savings,\n    crs.call_savings,\n    -- Annualize savings based on time period\n    CASE \n      WHEN '${time_period}' = '7d' THEN (cs.total_cost_savings + crs.call_savings) * 52.14 -- Weekly to annual\n      WHEN '${time_period}' = '30d' THEN (cs.total_cost_savings + crs.call_savings) * 12.17 -- Monthly to annual\n      WHEN '${time_period}' = '90d' THEN (cs.total_cost_savings + crs.call_savings) * 4.06 -- Quarterly to annual\n      WHEN '${time_period}' = '180d' THEN (cs.total_cost_savings + crs.call_savings) * 2.03 -- Semi-annual to annual\n      ELSE cs.total_cost_savings + crs.call_savings -- Annual period\n    END as annualized_savings\n  FROM current_savings cs\n  CROSS JOIN call_reduction_savings crs\n),\nroi_calculations AS (\n  SELECT \n    ic.investment_category,\n    ic.investment_amount,\n    ic.description,\n    ap.total_cost_savings + ap.call_savings as period_savings,\n    ap.annualized_savings,\n    -- ROI calculation: (Gain - Investment) / Investment * 100\n    CASE \n      WHEN ic.investment_amount > 0 THEN \n        ROUND(((ap.annualized_savings - ic.investment_amount) / ic.investment_amount * 100)::numeric, 1)\n      ELSE 0\n    END as roi_percentage,\n    -- Payback period in months: Investment / (Monthly Savings)\n    CASE \n      WHEN ap.annualized_savings > 0 THEN \n        ROUND((ic.investment_amount / (ap.annualized_savings / 12.0))::numeric, 1)\n      ELSE NULL\n    END as payback_months\n  FROM investment_costs ic\n  CROSS JOIN annualized_projections ap\n)\nSELECT \n  investment_category as \"Investment Category\",\n  investment_amount as \"Investment ($)\",\n  period_savings as \"Current Period Savings ($)\",\n  annualized_savings as \"Total Savings ($)\",\n  roi_percentage as \"ROI %\",\n  payback_months as \"Payback Period (Months)\",\n  description as \"Description\"\nFROM roi_calculations\nORDER BY roi_percentage DESC;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "ROI Analysis & Investment Returns",
+      "type": "table",
+      "exportOptions": {
+        "csv": {
+          "enabled": true,
+          "filename": "roi-analysis-investment-returns"
+        }
+      }
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "postgresql"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ROI %"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "red",
+                      "value": null
+                    },
+                    {
+                      "color": "yellow",
+                      "value": 10
+                    },
+                    {
+                      "color": "green",
+                      "value": 25
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Investment ($)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total Savings ($)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Payback Period"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurationdays"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 42
+      },
+      "id": 9,
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": true,
+          "reducer": [
+            "sum"
+          ],
+          "countRows": true
+        },
+        "exportOptions": {
+          "csv": {
+            "enabled": true,
+            "filename": "executive-roi-summary"
+          }
+        }
+      },
+      "pluginVersion": "10.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "postgresql"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH investment_data AS (\n  -- Estimated platform investment costs\n  SELECT \n    'Platform Development' as investment_category,\n    250000 as investment_amount,\n    'Initial development and setup costs' as description\n  UNION ALL\n  SELECT \n    'Annual Operations',\n    120000,\n    'Annual operational and maintenance costs'\n  UNION ALL\n  SELECT \n    'Training & Change Management',\n    50000,\n    'User training and change management'\n),\nsavings_data AS (\n  SELECT \n    SUM(digital_tasks_completed * 5.0) as total_cost_savings,\n    COUNT(DISTINCT user_id) as active_users,\n    AVG(digital_tasks_completed) as avg_digital_adoption\n  FROM analytics.user_profiles \n  WHERE updated_at >= NOW() - INTERVAL '${time_period}'\n    AND ($__all(channel) OR communication_channels && ARRAY[$channel])\n),\nroi_calculation AS (\n  SELECT \n    i.investment_category as \"Investment Category\",\n    i.investment_amount as \"Investment ($)\",\n    s.total_cost_savings as \"Total Savings ($)\",\n    CASE \n      WHEN i.investment_amount > 0 THEN \n        ROUND(((s.total_cost_savings - i.investment_amount) / i.investment_amount * 100)::numeric, 2)\n      ELSE 0\n    END as \"ROI %\",\n    CASE \n      WHEN s.total_cost_savings > 0 THEN \n        ROUND((i.investment_amount / (s.total_cost_savings / 365.0))::numeric, 0)\n      ELSE 0\n    END as \"Payback Period (Days)\",\n    i.description as \"Description\"\n  FROM investment_data i\n  CROSS JOIN savings_data s\n)\nSELECT * FROM roi_calculation\nUNION ALL\nSELECT \n  'TOTAL SUMMARY' as \"Investment Category\",\n  SUM(\"Investment ($)\") as \"Investment ($)\",\n  MAX(\"Total Savings ($)\") as \"Total Savings ($)\",\n  CASE \n    WHEN SUM(\"Investment ($)\") > 0 THEN \n      ROUND(((MAX(\"Total Savings ($)\") - SUM(\"Investment ($)\")) / SUM(\"Investment ($)\") * 100)::numeric, 2)\n    ELSE 0\n  END as \"ROI %\",\n  CASE \n    WHEN MAX(\"Total Savings ($)\") > 0 THEN \n      ROUND((SUM(\"Investment ($)\") / (MAX(\"Total Savings ($)\") / 365.0))::numeric, 0)\n    ELSE 0\n  END as \"Payback Period (Days)\",\n  'Overall platform ROI summary' as \"Description\"\nFROM roi_calculation\nWHERE \"Investment Category\" != 'TOTAL SUMMARY';",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Executive ROI Summary (Export Ready)",
+      "type": "table",
+      "exportOptions": {
+        "csv": {
+          "enabled": true,
+          "filename": "executive-roi-summary"
+        }
+      }
+    }
+  ],
+  "refresh": "1h",
+  "schemaVersion": 38,
+  "style": "light",
+  "tags": [
+    "business",
+    "intelligence",
+    "executive",
+    "roi",
+    "cost-savings"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "Last 30 days",
+          "value": "30d"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Time Period",
+        "multi": false,
+        "name": "time_period",
+        "options": [
+          {
+            "selected": false,
+            "text": "Last 7 days",
+            "value": "7d"
+          },
+          {
+            "selected": true,
+            "text": "Last 30 days",
+            "value": "30d"
+          },
+          {
+            "selected": false,
+            "text": "Last 90 days",
+            "value": "90d"
+          },
+          {
+            "selected": false,
+            "text": "Last 6 months",
+            "value": "180d"
+          },
+          {
+            "selected": false,
+            "text": "Last year",
+            "value": "365d"
+          }
+        ],
+        "query": "7d,30d,90d,180d,365d",
+        "queryValue": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "postgres",
+          "uid": "postgresql"
+        },
+        "definition": "SELECT DISTINCT channel FROM analytics.user_events ORDER BY channel",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Channel",
+        "multi": true,
+        "name": "channel",
+        "options": [],
+        "query": "SELECT DISTINCT channel FROM analytics.user_events ORDER BY channel",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "Previous Period",
+          "value": "previous"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Comparison",
+        "multi": false,
+        "name": "comparison",
+        "options": [
+          {
+            "selected": true,
+            "text": "Previous Period",
+            "value": "previous"
+          },
+          {
+            "selected": false,
+            "text": "Same Period Last Year",
+            "value": "year_over_year"
+          },
+          {
+            "selected": false,
+            "text": "No Comparison",
+            "value": "none"
+          }
+        ],
+        "query": "previous,year_over_year,none",
+        "queryValue": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "1h",
+      "6h",
+      "12h",
+      "1d"
+    ]
+  },
+  "timezone": "",
+  "title": "Business Intelligence",
+  "tags": [
+    "business",
+    "intelligence", 
+    "roi",
+    "cost-savings",
+    "export-enabled"
+  ],
+  "uid": "business-intelligence",
+  "version": 2,
+  "weekStart": "",
+  "export": {
+    "csv": {
+      "enabled": true,
+      "maxRows": 10000
+    },
+    "pdf": {
+      "enabled": true,
+      "timeout": 30
+    }
+  }
+}

@@ -1,22 +1,14 @@
-# Design Document - The Story Behind Our Decisions
+# Design Document
 
-## What We Built and Why
+## Overview
 
-Picture this: You've got a fantastic mobile app, but you're not quite sure how people are using it. Are they getting stuck somewhere? Do they love certain features? Are there opportunities to help them succeed? That's exactly the problem we set out to solve!
+The App Engagement Intelligence system is designed as a comprehensive behavioral analytics and user engagement platform that integrates with the existing IKK classic mobile app. The system consists of three core components: a real-time behavioral tracking engine, an AI-powered engagement recommendation engine, and a compliance-first data management layer. The architecture prioritizes GDPR/GDNG compliance while delivering personalized user experiences that drive digital adoption.
 
-Our App Engagement Intelligence system is like having a really smart, privacy-conscious friend watching over your app users. It notices patterns, spots opportunities to help, and delivers just the right message at just the right time. Think of it as three core pieces working together:
+The system operates on an event-driven architecture that captures user interactions, processes them through machine learning models to identify engagement patterns, and delivers targeted interventions through multiple channels (in-app notifications, push notifications, SMS, email). All data processing adheres to German health data regulations while providing actionable insights to reduce operational costs and improve user satisfaction.
 
-1. **The Observer** - Watches what users do (with their permission!) and learns from their behavior
-2. **The Thinker** - Uses AI to understand patterns and figure out how to help users succeed  
-3. **The Helper** - Makes sure everything follows privacy rules while keeping detailed records
+## Architecture
 
-The whole system is built with one key principle: help users have a better experience while respecting their privacy and following all the rules (especially German health data regulations).
-
-We process user interactions as they happen, run them through smart algorithms to identify when someone might need help, and then send perfectly timed messages through their preferred channel - whether that's a gentle in-app nudge, a push notification, SMS, or email. Every step is designed to reduce support calls, save time, and make users happier.
-
-## How Everything Connects
-
-Here's a bird's-eye view of how our system works - imagine it like a well-designed factory where each station has a specific job:
+### High-Level System Architecture
 
 ```mermaid
 graph TB

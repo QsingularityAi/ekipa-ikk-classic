@@ -1,0 +1,21 @@
+apiVersion: 1
+
+datasources:
+  - name: PostgreSQL
+    type: postgres
+    access: proxy
+    url: localhost:5432
+    database: app_engagement_intelligence
+    user: postgres
+    editable: true
+    jsonData:
+      sslmode: disable
+      maxOpenConns: 100
+      maxIdleConns: 50
+      maxIdleConnsAuto: true
+      connMaxLifetime: 14400
+      postgresVersion: 1500
+      timescaledb: false
+      queryTimeout: 30s
+    secureJsonData:
+      password: password

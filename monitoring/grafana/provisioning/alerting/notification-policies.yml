@@ -1,0 +1,78 @@
+# Grafana Notification Policies Configuration
+# This file defines how alerts are routed to different contact points
+
+apiVersion: 1
+
+policies:
+  - orgId: 1
+    receiver: email-warning  # Default receiver
+    group_by: ['alertname', 'severity']
+    group_wait: 30s
+    group_interval: 5m
+    repeat_interval: 12h
+    routes:
+      # Critical alerts go to multiple channels
+      - receiver: email-critical
+        matchers:
+          - severity = critical
+        group_wait: 10s
+        group_interval: 2m
+        repeat_interval: 1h
+        routes:
+          # Critical DevOps alerts also go to Slack
+          - receiver: slack-devops
+            matchers:
+              - team = devops
+            continue: true
+          # All critical alerts also trigger webhook
+          - receiver: webhook-integration
+            continue: true
+      
+      # Warning alerts routing
+      - receiver: email-warning
+        matchers:
+          - severity = warning
+        group_wait: 1m
+        group_interval: 5m
+        repeat_interval: 6h
+        routes:
+          # DevOps warnings also go to Slack
+          - receiver: slack-devops
+            matchers:
+              - team = devops
+            continue: true
+      
+      # Product team alerts
+      - receiver: email-warning
+        matchers:
+          - team = product
+        group_wait: 2m
+        group_interval: 10m
+        repeat_interval: 24h
+      
+      # Data team alerts
+      - receiver: email-warning
+        matchers:
+          - team = data
+        group_wait: 5m
+        group_interval: 15m
+        repeat_interval: 12h
+        routes:
+          # Data pipeline issues also trigger webhook
+          - receiver: webhook-integration
+            matchers:
+              - alertname =~ ".*pipeline.*"
+            continue: true
+
+    # Inhibition rules to prevent spam
+    inhibit_rules:
+      - source_matchers:
+          - severity = critical
+        target_matchers:
+          - severity = warning
+        equal: ['alertname', 'team']
+      - source_matchers:
+          - alertname = "Database Connection Failure Alert"
+        target_matchers:
+          - team = data
+        equal: ['instance']
